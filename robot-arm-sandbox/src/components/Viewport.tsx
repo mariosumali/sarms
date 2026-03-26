@@ -78,7 +78,7 @@ function FloorPlane() {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, FLOOR_Y - 0.001, 0]} receiveShadow>
       <planeGeometry args={[40, 40]} />
-      <meshStandardMaterial color="#0e1118" transparent opacity={0.55} metalness={0.1} roughness={0.9} />
+      <meshStandardMaterial color="#0c1117" transparent opacity={0.55} metalness={0.1} roughness={0.9} />
     </mesh>
   );
 }
@@ -94,8 +94,8 @@ function ArmLinks() {
     hasSelfCol: checkSelfCollision(points),
   }), [points]);
 
-  const linkColor = hasFloor || hasSelfCol ? '#ff4444' : '#3a4e68';
-  const traceColor = hasFloor || hasSelfCol ? '#ff4444' : '#00e5ff';
+  const linkColor = hasFloor || hasSelfCol ? '#ef4444' : '#3a4e68';
+  const traceColor = hasFloor || hasSelfCol ? '#ef4444' : '#3b82f6';
 
   if (points.length < 2) return null;
   return (
@@ -164,7 +164,7 @@ function ArmScene() {
 
       <Environment preset="city" environmentIntensity={0.15} />
 
-      <Grid args={[40, 40]} cellSize={0.5} sectionSize={2} cellColor="#151a24" sectionColor="#1e2836" fadeDistance={20} infiniteGrid />
+      <Grid args={[40, 40]} cellSize={0.5} sectionSize={2} cellColor="#131a24" sectionColor="#1a2535" fadeDistance={20} infiniteGrid />
       <FloorPlane />
       <ClickToAddWaypoint />
 
@@ -203,7 +203,7 @@ export function Viewport() {
       <Canvas shadows camera={{ position: [2.5, 2.5, 4], fov: 50, near: 0.01, far: 100 }}
         style={{ width: '100%', height: '100%' }}
         gl={{ antialias: true, alpha: false, toneMapping: 3 }}
-        onCreated={({ gl, scene }) => { gl.setClearColor('#0a0c10'); scene.fog = null; }}
+        onCreated={({ gl, scene }) => { gl.setClearColor('#0c1117'); scene.fog = null; }}
       >
         <ArmScene />
       </Canvas>
@@ -218,7 +218,7 @@ function ViewportHint() {
   const joints = useSandboxStore(s => s.joints);
   if (joints.length >= 2) return null;
   return (
-    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--text-dim)', fontSize: '14px', fontFamily: 'var(--font-sans)', pointerEvents: 'none', textAlign: 'center' }}>
+    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'var(--text-faint)', fontSize: '14px', fontFamily: 'var(--font-sans)', pointerEvents: 'none', textAlign: 'center' }}>
       Pick a preset or add parts from the left
     </div>
   );

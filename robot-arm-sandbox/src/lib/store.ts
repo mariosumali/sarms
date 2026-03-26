@@ -69,6 +69,10 @@ export interface SandboxStore {
   showAnalytics: boolean;
   showPathLine: boolean;
 
+  leftPanelOpen: boolean;
+  rightPanelOpen: boolean;
+  bottomPanelOpen: boolean;
+
   addJoint: (type: Joint['type'], afterIndex?: number) => void;
   removeJoint: (id: string) => void;
   updateJoint: (id: string, patch: Partial<Joint>) => void;
@@ -116,6 +120,10 @@ export interface SandboxStore {
 
   toggleAnalytics: () => void;
   togglePathLine: () => void;
+
+  toggleLeftPanel: () => void;
+  toggleRightPanel: () => void;
+  toggleBottomPanel: () => void;
 
   getAnalytics: () => JointAnalytics[];
 }
@@ -268,6 +276,10 @@ export const useSandboxStore = create<SandboxStore>((set, get) => ({
 
   showAnalytics: false,
   showPathLine: true,
+
+  leftPanelOpen: true,
+  rightPanelOpen: true,
+  bottomPanelOpen: true,
 
   pushUndo: () => {
     const { joints, undoStack } = get();
@@ -671,6 +683,10 @@ export const useSandboxStore = create<SandboxStore>((set, get) => ({
 
   toggleAnalytics: () => set({ showAnalytics: !get().showAnalytics }),
   togglePathLine: () => set({ showPathLine: !get().showPathLine }),
+
+  toggleLeftPanel: () => set({ leftPanelOpen: !get().leftPanelOpen }),
+  toggleRightPanel: () => set({ rightPanelOpen: !get().rightPanelOpen }),
+  toggleBottomPanel: () => set({ bottomPanelOpen: !get().bottomPanelOpen }),
 
   /* ─── Analytics ─── */
 
