@@ -33,10 +33,10 @@ export function DHTable() {
                 textAlign: 'left',
                 fontSize: '10px',
                 fontWeight: 600,
-                color: 'var(--text-dim)',
+                color: 'var(--text-faint)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
-                borderBottom: '1px solid var(--border-panel)',
+                borderBottom: '1px solid var(--border-default)',
                 whiteSpace: 'nowrap',
               }}>
                 {h}
@@ -51,7 +51,7 @@ export function DHTable() {
               className="animate-in"
               style={{
                 background: i === selectedRowIndex
-                  ? 'rgba(0,229,255,0.06)'
+                  ? 'rgba(59,130,246,0.08)'
                   : 'transparent',
                 borderLeft: i === selectedRowIndex
                   ? '2px solid var(--accent)'
@@ -87,7 +87,7 @@ export function DHTable() {
               <td colSpan={8} style={{
                 ...cellStyle,
                 textAlign: 'center',
-                color: 'var(--text-dim)',
+                color: 'var(--text-faint)',
                 padding: '16px',
               }}>
                 No joints in chain
@@ -103,6 +103,6 @@ export function DHTable() {
 const cellStyle: React.CSSProperties = {
   padding: '5px 10px',
   color: 'var(--text-primary)',
-  borderBottom: '1px solid rgba(255,255,255,0.03)',
+  borderBottom: '1px solid var(--border-subtle)',
   whiteSpace: 'nowrap',
 };
