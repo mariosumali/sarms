@@ -23,7 +23,7 @@ export function SnapConnector({ position, isChainTip }: SnapConnectorProps) {
   });
 
   const baseRadius = isChainTip ? 0.045 : 0.03;
-  const glowColor = isChainTip ? '#00ff88' : '#00e5ff';
+  const glowColor = isChainTip ? '#34d399' : '#3b82f6';
   const opacity = isChainTip ? 0.85 : (isDragging ? 0.6 : 0.3);
 
   return (
@@ -32,7 +32,7 @@ export function SnapConnector({ position, isChainTip }: SnapConnectorProps) {
       <meshStandardMaterial
         color={glowColor}
         emissive={glowColor}
-        emissiveIntensity={isChainTip ? 1.0 : 0.5}
+        emissiveIntensity={isChainTip ? 0.5 : 0.2}
         transparent
         opacity={opacity}
       />
