@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSandboxStore, getEEPosition } from '../lib/store';
 import { computeAllTransforms, positionFromMatrix } from '../lib/kinematics';
 import { FRIENDLY_NAMES, JOINT_COLORS } from '../lib/jointDefaults';
+import { JOINT_TYPE_ICONS, IconChevron } from './Icons';
 import type { Joint } from '../lib/kinematics';
 
 const DEG = 180 / Math.PI;
@@ -21,9 +22,9 @@ function SliderField({ label, value, min, max, step, unit, onChange }: {
       <div className="field-row">
         <input type="range" min={dMin} max={dMax} step={isDeg ? 1 : step} value={dv}
           onChange={e => onChange(isDeg ? parseFloat(e.target.value) * RAD : parseFloat(e.target.value))} />
-        <input type="number" style={{ width: '60px' }} value={Number(dv.toFixed(isDeg ? 1 : 3))} step={isDeg ? 1 : step}
+        <input type="number" style={{ width: '58px' }} value={Number(dv.toFixed(isDeg ? 1 : 3))} step={isDeg ? 1 : step}
           onChange={e => { const r = parseFloat(e.target.value); if (!isNaN(r)) onChange(isDeg ? r * RAD : r); }} />
-        <span className="mono" style={{ fontSize: '10px', color: 'var(--text-dim)', width: '14px' }}>{unit}</span>
+        <span className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', width: '14px' }}>{unit}</span>
       </div>
     </div>
   );
@@ -44,20 +45,23 @@ function Section({ title, children, defaultOpen = true, badge }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ marginBottom: '8px' }}>
+    <div style={{ marginBottom: 4 }}>
       <button onClick={() => setOpen(!open)} style={{
-        display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '5px 0',
-        background: 'none', border: 'none', borderBottom: '1px solid var(--border-panel)',
-        color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '0.06em', cursor: 'pointer', marginBottom: '8px',
+        display: 'flex', alignItems: 'center', gap: 5, width: '100%', padding: '5px 0',
+        background: 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)',
+        color: 'var(--text-muted)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+        letterSpacing: '0.05em', cursor: 'pointer', marginBottom: 8,
       }}>
-        <span style={{ fontSize: '8px', transition: 'transform 0.15s', transform: open ? 'rotate(90deg)' : 'rotate(0)' }}>▶</span>
+        <IconChevron
+          size={9}
+          color="var(--text-faint)"
+          className={`panel-section-chevron ${open ? 'open' : ''}`}
+        />
         {title}
         {badge && (
-          <span style={{
-            marginLeft: 'auto', fontSize: '9px', fontFamily: 'var(--font-mono)',
-            background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-            padding: '1px 5px', borderRadius: '3px',
+          <span className="panel-section-badge" style={{
+            background: 'var(--bg-raised)',
+            color: 'var(--text-muted)',
           }}>{badge}</span>
         )}
       </button>
@@ -71,7 +75,7 @@ function BasePanel() {
   const setBp = useSandboxStore(s => s.setBasePosition);
   return (
     <Section title="Position">
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: 6 }}>
         <NumField label="X" value={bp[0]} step={0.1} onChange={v => setBp([v, bp[1], bp[2]])} />
         <NumField label="Y" value={bp[1]} step={0.1} onChange={v => setBp([bp[0], v, bp[2]])} />
         <NumField label="Z" value={bp[2]} step={0.1} onChange={v => setBp([bp[0], bp[1], v])} />
@@ -142,7 +146,7 @@ function WorldPos({ index }: { index: number }) {
   }, [joints, bp, index]);
   if (!pos) return null;
   return (
-    <div style={{ padding: '6px 0', fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>
+    <div style={{ padding: '4px 0', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)' }}>
       Position: {pos.x.toFixed(2)}, {pos.y.toFixed(2)}, {pos.z.toFixed(2)}
     </div>
   );
@@ -155,17 +159,15 @@ function EEReadout() {
   const p = getEEPosition(joints, bp);
   const dist = p.distanceTo(ikTarget);
   return (
-    <div style={{ padding: '10px', background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)', borderRadius: '8px', marginTop: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>End-Effector</div>
-        <div style={{
-          fontSize: '9px', fontFamily: 'var(--font-mono)',
-          color: dist < 0.01 ? '#00ff88' : dist < 0.1 ? '#ffaa00' : '#ff6666',
-        }}>
+    <div className="inspector-card" style={{ marginTop: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>End-Effector</div>
+        <span className={`stat-badge ${dist < 0.01 ? 'stat-badge--emerald' : dist < 0.1 ? 'stat-badge--amber' : 'stat-badge--rose'}`}
+          style={{ fontSize: 9 }}>
           dist: {dist.toFixed(3)}
-        </div>
+        </span>
       </div>
-      <div className="mono" style={{ fontSize: '11px', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+      <div className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
         X: {p.x.toFixed(3)} &nbsp; Y: {p.y.toFixed(3)} &nbsp; Z: {p.z.toFixed(3)}
       </div>
     </div>
@@ -178,15 +180,15 @@ function TargetInput() {
   const autoIK = useSandboxStore(s => s.autoIK);
   const setAutoIK = useSandboxStore(s => s.setAutoIK);
   return (
-    <div style={{ marginTop: '8px', padding: '10px', background: 'rgba(255,68,68,0.04)', border: '1px solid rgba(255,68,68,0.1)', borderRadius: '8px' }}>
-      <div style={{ fontSize: '10px', fontWeight: 600, color: '#ff6666', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>
-        Target (drag the red sphere)
+    <div className="inspector-card" style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+        Target
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontSize: '11px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, fontSize: 11, color: 'var(--text-secondary)', cursor: 'pointer' }}>
         <input type="checkbox" checked={autoIK} onChange={e => setAutoIK(e.target.checked)} />
         Auto-solve on target move
       </label>
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: 6 }}>
         {(['x', 'y', 'z'] as const).map(a => (
           <NumField key={a} label={a.toUpperCase()} value={ikTarget[a]} step={0.05}
             onChange={v => { const t = ikTarget.clone(); (t as any)[a] = v; setIKTarget(t); }} />
@@ -208,78 +210,63 @@ function WaypointSection() {
   const setPathProgress = useSandboxStore(s => s.setPathProgress);
 
   return (
-    <div style={{ marginTop: '8px', padding: '10px', background: 'rgba(255,170,0,0.04)', border: '1px solid rgba(255,170,0,0.1)', borderRadius: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 600, color: '#ffaa00', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <div className="inspector-card" style={{ marginTop: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Waypoints
         </div>
-        <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>Shift+click floor to add</span>
+        <span style={{ fontSize: 9, color: 'var(--text-faint)' }}>Shift+click floor</span>
       </div>
 
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
         <button
           onClick={() => addWaypoint(ikTarget.clone())}
-          style={{
-            flex: 1, padding: '4px 8px', fontSize: '10px',
-            background: 'rgba(255,170,0,0.08)', border: '1px solid rgba(255,170,0,0.25)',
-            borderRadius: '4px', color: '#ffaa00', cursor: 'pointer',
-          }}
+          className="btn-sm"
+          style={{ flex: 1 }}
         >
           + Add at Target
         </button>
         {waypoints.length > 0 && (
-          <button
-            onClick={clearWaypoints}
-            style={{
-              padding: '4px 8px', fontSize: '10px',
-              background: 'rgba(255,68,68,0.06)', border: '1px solid rgba(255,68,68,0.2)',
-              borderRadius: '4px', color: '#ff6666', cursor: 'pointer',
-            }}
-          >
+          <button onClick={clearWaypoints} className="btn-sm btn-danger">
             Clear
           </button>
         )}
       </div>
 
       {waypoints.length === 0 ? (
-        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textAlign: 'center', padding: '6px 0' }}>
+        <div style={{ fontSize: 10, color: 'var(--text-faint)', textAlign: 'center', padding: '4px 0' }}>
           No waypoints yet
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: '120px', overflowY: 'auto' }}>
-          {waypoints.map((wp, i) => {
-            const hue = (i * 60 + 30) % 360;
-            return (
-              <div key={wp.id} style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '3px 6px', borderRadius: '4px',
-                background: 'rgba(255,255,255,0.02)',
-              }}>
-                <span style={{ color: `hsl(${hue}, 80%, 55%)`, fontSize: '10px', fontWeight: 700, minWidth: '16px' }}>
-                  {i + 1}
-                </span>
-                <span style={{ flex: 1, fontSize: '9px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                  ({wp.position.x.toFixed(2)}, {wp.position.y.toFixed(2)}, {wp.position.z.toFixed(2)})
-                </span>
-                <button
-                  onClick={() => removeWaypoint(wp.id)}
-                  style={{
-                    padding: '0 3px', fontSize: '9px', color: 'var(--text-dim)',
-                    background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5,
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            );
-          })}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 120, overflowY: 'auto' }}>
+          {waypoints.map((wp, i) => (
+            <div key={wp.id} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '3px 6px', borderRadius: 'var(--radius-xs)',
+              background: 'var(--bg-hover)',
+            }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-mono)', minWidth: 16 }}>
+                {i + 1}
+              </span>
+              <span style={{ flex: 1, fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                ({wp.position.x.toFixed(2)}, {wp.position.y.toFixed(2)}, {wp.position.z.toFixed(2)})
+              </span>
+              <button
+                onClick={() => removeWaypoint(wp.id)}
+                className="btn-ghost btn-xs"
+                style={{ padding: '0 3px', opacity: 0.5 }}
+              >
+                &#10005;
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
       {waypointPoses && waypointPoses.length >= 2 && (
-        <div style={{ marginTop: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>Scrub</span>
+        <div style={{ marginTop: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 9, color: 'var(--text-faint)' }}>Scrub</span>
             <input
               type="range"
               min={0}
@@ -288,9 +275,9 @@ function WaypointSection() {
               value={pathAnimProgress}
               disabled={pathAnimState === 'playing'}
               onChange={e => setPathProgress(Number(e.target.value))}
-              style={{ flex: 1, height: '3px' }}
+              style={{ flex: 1, height: 3 }}
             />
-            <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', minWidth: '28px' }}>
+            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', minWidth: 28 }}>
               {pathAnimProgress.toFixed(1)}
             </span>
           </div>
@@ -314,30 +301,46 @@ export function RightPanel() {
 
   return (
     <div className="panel panel-right">
-      <div className="panel-header">Inspector</div>
-      <div className="panel-body">
+      <div className="panel-section">
+        <div className="panel-section-header" style={{ cursor: 'default' }}>
+          Inspector
+        </div>
+      </div>
+      <div style={{ padding: '8px 12px', flex: 1, overflowY: 'auto' }}>
         {!selected ? (
-          <div style={{ color: 'var(--text-dim)', fontSize: '12px', textAlign: 'center', marginTop: '40px', lineHeight: '2' }}>
-            <div style={{ fontSize: '20px', opacity: 0.3, marginBottom: '4px' }}>&#9678;</div>
-            Click a joint to edit it
+          <div style={{ color: 'var(--text-faint)', fontSize: 11, textAlign: 'center', marginTop: 36, lineHeight: 1.8, letterSpacing: '-0.005em' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" strokeWidth="1" strokeLinecap="round" style={{ opacity: 0.25, marginBottom: 6 }}>
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="3" x2="12" y2="1" />
+              <line x1="12" y1="23" x2="12" y2="21" />
+              <line x1="3" y1="12" x2="1" y2="12" />
+              <line x1="23" y1="12" x2="21" y2="12" />
+            </svg>
+            <div>Select a joint to inspect</div>
           </div>
         ) : (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '16px', color }}>
-                {({ base: '\u2B21', revolute: '\u21BB', prismatic: '\u21D5', elbow: '\u231F', 'end-effector': '\u2295' } as Record<string, string>)[selected.type]}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <div style={{
+                width: 26, height: 26, borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-raised)', border: '1px solid var(--border-default)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                {(() => { const I = JOINT_TYPE_ICONS[selected.type]; return I ? <I size={14} color={color} /> : null; })()}
+              </div>
               <input type="text" value={selected.name} onChange={e => u({ name: e.target.value })}
-                style={{ flex: 1, fontWeight: 600, fontSize: '13px', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-panel)', borderRadius: 0, padding: '2px 0' }} />
+                style={{ flex: 1, fontWeight: 600, fontSize: 13, background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-default)', borderRadius: 0, padding: '2px 0' }} />
             </div>
 
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-              <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', background: `${color}15`, color }}>{FRIENDLY_NAMES[selected.type]}</span>
-              <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-dim)' }}>#{idx}</span>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: '3px' }}>
-                <button className="btn-icon" onClick={() => reorderJoint(selected.id, 'up')} disabled={idx <= 1} style={{ padding: '2px 5px', fontSize: '10px' }}>&#8593;</button>
-                <button className="btn-icon" onClick={() => reorderJoint(selected.id, 'down')} disabled={idx >= joints.length - 1} style={{ padding: '2px 5px', fontSize: '10px' }}>&#8595;</button>
-                {selected.type !== 'base' && <button className="btn-icon btn-danger" onClick={() => removeJoint(selected.id)} style={{ padding: '2px 5px', fontSize: '10px' }}>&#10005;</button>}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+              <span className="tag" style={{ background: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>{FRIENDLY_NAMES[selected.type]}</span>
+              <span className="tag" style={{ background: 'var(--bg-raised)', color: 'var(--text-faint)' }}>#{idx}</span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 3 }}>
+                <button className="btn-icon btn-xs" onClick={() => reorderJoint(selected.id, 'up')} disabled={idx <= 1}>&#8593;</button>
+                <button className="btn-icon btn-xs" onClick={() => reorderJoint(selected.id, 'down')} disabled={idx >= joints.length - 1}>&#8595;</button>
+                {selected.type !== 'base' && <button className="btn-icon btn-xs btn-danger" onClick={() => removeJoint(selected.id)}>&#10005;</button>}
               </div>
             </div>
 
@@ -345,7 +348,7 @@ export function RightPanel() {
             {selected.type === 'revolute' && <RevolutePanel j={selected} u={u} />}
             {selected.type === 'prismatic' && <PrismaticPanel j={selected} u={u} />}
             {selected.type === 'elbow' && <ElbowPanel j={selected} u={u} />}
-            {selected.type === 'end-effector' && <div style={{ color: 'var(--text-dim)', fontSize: '11px', padding: '8px 0' }}>The gripper has no settings.</div>}
+            {selected.type === 'end-effector' && <div style={{ color: 'var(--text-faint)', fontSize: 11, padding: '8px 0' }}>The gripper has no editable parameters.</div>}
             {selected.type !== 'base' && <WorldPos index={idx} />}
           </>
         )}
