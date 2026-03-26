@@ -125,7 +125,6 @@ function ArmLinks() {
 
 function ClickToAddWaypoint() {
   const addWaypoint = useSandboxStore(s => s.addWaypoint);
-  const { camera, gl } = useThree();
 
   const handleClick = useCallback((e: any) => {
     if (e.shiftKey) {
