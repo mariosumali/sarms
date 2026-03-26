@@ -52,8 +52,8 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
   const rot: [number, number, number] = [euler.x, euler.y, euler.z];
 
   const color = JOINT_COLORS[joint.type];
-  const emC = isSelected ? '#00e5ff' : hovered ? '#45d0f0' : '#000000';
-  const emI = isSelected ? 0.8 : hovered ? 0.35 : 0;
+  const emC = isSelected ? '#3b82f6' : hovered ? '#60a5fa' : '#000000';
+  const emI = isSelected ? 0.5 : hovered ? 0.2 : 0;
 
   const getNDC = useCallback((e: PointerEvent): Vector2 => {
     const r = gl.domElement.getBoundingClientRect();
@@ -103,11 +103,11 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
   const selRing = isSelected && (
     <mesh rotation={[Math.PI / 2, 0, 0]}>
       <torusGeometry args={[0.28, 0.012, 16, 48]} />
-      <meshStandardMaterial color="#00e5ff" emissive="#00e5ff" emissiveIntensity={2} transparent opacity={0.85} toneMapped={false} />
+      <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.7} transparent opacity={0.75} toneMapped={false} />
     </mesh>
   );
 
-  const discColor = isSelected ? '#00e5ff' : hovered ? '#66ddff' : color;
+  const discColor = isSelected ? '#3b82f6' : hovered ? '#60a5fa' : color;
   const discEmI = isSelected ? 0.8 : hovered ? 0.4 : 0.15;
 
   return (
