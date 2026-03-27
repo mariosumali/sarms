@@ -19,15 +19,15 @@ function AxisIndicator() {
     <group>
       <mesh position={[len / 2, 0, 0]}>
         <boxGeometry args={[len, 0.01, 0.01]} />
-        <meshBasicMaterial color="#ff3333" transparent opacity={0.7} />
+        <meshBasicMaterial color="#cc4444" transparent opacity={0.55} />
       </mesh>
       <mesh position={[0, len / 2, 0]}>
         <boxGeometry args={[0.01, len, 0.01]} />
-        <meshBasicMaterial color="#33ff33" transparent opacity={0.7} />
+        <meshBasicMaterial color="#44cc44" transparent opacity={0.55} />
       </mesh>
       <mesh position={[0, 0, len / 2]}>
         <boxGeometry args={[0.01, 0.01, len]} />
-        <meshBasicMaterial color="#3388ff" transparent opacity={0.7} />
+        <meshBasicMaterial color="#4488cc" transparent opacity={0.55} />
       </mesh>
     </group>
   );
@@ -47,13 +47,19 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
   const dragPlane = useRef(new Plane());
   const dragOffset = useRef(new Vector3());
 
-  const pos: [number, number, number] = [worldMatrix.elements[12], worldMatrix.elements[13], worldMatrix.elements[14]];
-  const euler = new Euler(); euler.setFromRotationMatrix(worldMatrix);
+  // Joint visuals go at the pivot point:
+  // - base/end-effector: at own frame
+  // - revolute/prismatic/elbow: at parent frame (that's where the rotation/translation axis is)
+  const usePivot = parentMatrix && joint.type !== 'base' && joint.type !== 'end-effector';
+  const displayMatrix = usePivot ? parentMatrix : worldMatrix;
+
+  const pos: [number, number, number] = [displayMatrix.elements[12], displayMatrix.elements[13], displayMatrix.elements[14]];
+  const euler = new Euler(); euler.setFromRotationMatrix(displayMatrix);
   const rot: [number, number, number] = [euler.x, euler.y, euler.z];
 
   const color = JOINT_COLORS[joint.type];
-  const emC = isSelected ? '#3b82f6' : hovered ? '#60a5fa' : '#000000';
-  const emI = isSelected ? 0.5 : hovered ? 0.2 : 0;
+  const emC = isSelected ? '#5b8ec9' : hovered ? '#7aa8d6' : '#000000';
+  const emI = isSelected ? 0.4 : hovered ? 0.15 : 0;
 
   const getNDC = useCallback((e: PointerEvent): Vector2 => {
     const r = gl.domElement.getBoundingClientRect();
@@ -102,13 +108,13 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
 
   const selRing = isSelected && (
     <mesh rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[0.28, 0.012, 16, 48]} />
-      <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.7} transparent opacity={0.75} toneMapped={false} />
+      <torusGeometry args={[0.28, 0.01, 16, 48]} />
+      <meshStandardMaterial color="#5b8ec9" emissive="#5b8ec9" emissiveIntensity={0.3} transparent opacity={0.5} toneMapped={false} />
     </mesh>
   );
 
-  const discColor = isSelected ? '#3b82f6' : hovered ? '#60a5fa' : color;
-  const discEmI = isSelected ? 0.8 : hovered ? 0.4 : 0.15;
+  const discColor = isSelected ? '#5b8ec9' : hovered ? '#7aa8d6' : color;
+  const discEmI = isSelected ? 0.5 : hovered ? 0.25 : 0.1;
 
   return (
     <group position={pos} rotation={rot}>
@@ -116,11 +122,11 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
         <group>
           <mesh {...ip} castShadow receiveShadow>
             <cylinderGeometry args={[0.22, 0.28, 0.05, 6]} />
-            <meshStandardMaterial color="#556070" emissive={emC} emissiveIntensity={emI} metalness={0.8} roughness={0.2} />
+            <meshStandardMaterial color="#4a5565" emissive={emC} emissiveIntensity={emI} metalness={0.7} roughness={0.3} />
           </mesh>
           <mesh position={[0, 0.04, 0]} {...ip}>
             <cylinderGeometry args={[0.08, 0.1, 0.03, 16]} />
-            <meshStandardMaterial color="#667080" metalness={0.7} roughness={0.3} />
+            <meshStandardMaterial color="#586878" metalness={0.6} roughness={0.35} />
           </mesh>
           <AxisIndicator />
           {selRing}
@@ -129,7 +135,6 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
 
       {joint.type === 'revolute' && (
         <group>
-          {/* Rotation disc in XY plane -- rotation about local Z */}
           <mesh {...ip} castShadow>
             <torusGeometry args={[0.14, 0.025, 16, 32]} />
             <meshStandardMaterial
@@ -137,10 +142,9 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
               metalness={0.4} roughness={0.4} transparent opacity={0.85}
             />
           </mesh>
-          {/* Z-axis indicator (rotation axis) */}
           <mesh position={[0, 0, 0.12]}>
             <coneGeometry args={[0.03, 0.08, 8]} />
-            <meshStandardMaterial color="#3388ff" emissive="#3388ff" emissiveIntensity={0.3} />
+            <meshStandardMaterial color="#4488cc" emissive="#4488cc" emissiveIntensity={0.2} />
           </mesh>
           <mesh>
             <cylinderGeometry args={[0.05, 0.05, 0.06, 12]} />
@@ -153,24 +157,21 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
 
       {joint.type === 'prismatic' && (
         <group>
-          {/* Rail along Z axis */}
           <mesh {...ip} castShadow>
             <boxGeometry args={[0.06, 0.06, 0.35]} />
-            <meshStandardMaterial color="#7766bb" emissive={emC} emissiveIntensity={emI} metalness={0.5} roughness={0.3} transparent opacity={0.5} />
+            <meshStandardMaterial color="#6660a0" emissive={emC} emissiveIntensity={emI} metalness={0.5} roughness={0.35} transparent opacity={0.45} />
           </mesh>
-          {/* Carriage block */}
           <mesh {...ip} castShadow>
             <boxGeometry args={[0.1, 0.1, 0.12]} />
             <meshStandardMaterial color={color} emissive={emC} emissiveIntensity={emI} metalness={0.6} roughness={0.25} />
           </mesh>
-          {/* Z arrow */}
           <mesh position={[0, 0, 0.22]}>
             <coneGeometry args={[0.025, 0.06, 8]} />
-            <meshStandardMaterial color="#9b7bf0" emissive="#9b7bf0" emissiveIntensity={0.3} />
+            <meshStandardMaterial color="#8a72c8" emissive="#8a72c8" emissiveIntensity={0.2} />
           </mesh>
           <mesh position={[0, 0, -0.22]} rotation={[Math.PI, 0, 0]}>
             <coneGeometry args={[0.025, 0.06, 8]} />
-            <meshStandardMaterial color="#9b7bf0" emissive="#9b7bf0" emissiveIntensity={0.3} />
+            <meshStandardMaterial color="#8a72c8" emissive="#8a72c8" emissiveIntensity={0.2} />
           </mesh>
           <AxisIndicator />
           {selRing}
@@ -179,7 +180,6 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
 
       {joint.type === 'elbow' && (
         <group>
-          {/* Ring 1: first rotation in parent XY plane (about Z before this frame) */}
           <mesh {...ip} castShadow>
             <torusGeometry args={[0.14, 0.022, 16, 32]} />
             <meshStandardMaterial
@@ -187,15 +187,13 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
               metalness={0.4} roughness={0.4} transparent opacity={0.8}
             />
           </mesh>
-          {/* Ring 2: second rotation about the orthogonal axis (rotated 90° in X) */}
           <mesh rotation={[Math.PI / 2, 0, 0]} {...ip} castShadow>
             <torusGeometry args={[0.11, 0.02, 16, 32]} />
             <meshStandardMaterial
-              color="#ffaa44" emissive="#ffaa44" emissiveIntensity={discEmI * 0.8}
-              metalness={0.4} roughness={0.4} transparent opacity={0.75}
+              color="#d09448" emissive="#d09448" emissiveIntensity={discEmI * 0.6}
+              metalness={0.4} roughness={0.4} transparent opacity={0.7}
             />
           </mesh>
-          {/* Hub sphere */}
           <mesh {...ip}>
             <sphereGeometry args={[0.06, 16, 16]} />
             <meshStandardMaterial color={color} emissive={emC} emissiveIntensity={emI} metalness={0.5} roughness={0.4} />
@@ -211,14 +209,13 @@ export function JointMesh({ joint, worldMatrix, parentMatrix }: JointMeshProps) 
             <coneGeometry args={[0.06, 0.16, 12]} />
             <meshStandardMaterial color={color} emissive={emC} emissiveIntensity={emI} metalness={0.5} roughness={0.3} />
           </mesh>
-          {/* Finger prongs */}
           <mesh position={[-0.04, 0, 0.12]} rotation={[-0.2, 0, 0]}>
             <boxGeometry args={[0.02, 0.02, 0.08]} />
-            <meshStandardMaterial color="#ff7766" metalness={0.5} roughness={0.4} />
+            <meshStandardMaterial color="#d07060" metalness={0.5} roughness={0.4} />
           </mesh>
           <mesh position={[0.04, 0, 0.12]} rotation={[0.2, 0, 0]}>
             <boxGeometry args={[0.02, 0.02, 0.08]} />
-            <meshStandardMaterial color="#ff7766" metalness={0.5} roughness={0.4} />
+            <meshStandardMaterial color="#d07060" metalness={0.5} roughness={0.4} />
           </mesh>
           <AxisIndicator />
           {selRing}

@@ -17,25 +17,27 @@ export function DHTable() {
     return idx - 1;
   })();
 
+  const headers = ['#', 'Type', 'a (m)', 'd (m)', 'α (°)', 'θ (°)', 'θ_min', 'θ_max'];
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{
         width: '100%',
         borderCollapse: 'collapse',
         fontFamily: 'var(--font-mono)',
-        fontSize: '11px',
+        fontSize: 11,
       }}>
         <thead>
           <tr>
-            {['Joint #', 'Type', 'a (m)', 'd (m)', 'α (°)', 'θ (°)', 'θ_min', 'θ_max'].map(h => (
+            {headers.map(h => (
               <th key={h} style={{
-                padding: '6px 10px',
+                padding: '4px 8px',
                 textAlign: 'left',
-                fontSize: '10px',
-                fontWeight: 600,
+                fontSize: 10,
+                fontWeight: 500,
                 color: 'var(--text-faint)',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
                 borderBottom: '1px solid var(--border-default)',
                 whiteSpace: 'nowrap',
               }}>
@@ -48,10 +50,9 @@ export function DHTable() {
           {table.map((row, i) => (
             <tr
               key={row.index}
-              className="animate-in"
               style={{
                 background: i === selectedRowIndex
-                  ? 'rgba(59,130,246,0.08)'
+                  ? 'var(--bg-active)'
                   : 'transparent',
                 borderLeft: i === selectedRowIndex
                   ? '2px solid var(--accent)'
@@ -61,11 +62,10 @@ export function DHTable() {
               <td style={cellStyle}>{row.index}</td>
               <td style={cellStyle}>
                 <span style={{
-                  display: 'inline-block',
-                  padding: '1px 6px',
-                  borderRadius: '3px',
-                  fontSize: '10px',
-                  background: 'rgba(255,255,255,0.05)',
+                  padding: '1px 5px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: 10,
+                  background: 'var(--bg-hover)',
                 }}>
                   {row.type}
                 </span>
@@ -74,10 +74,10 @@ export function DHTable() {
               <td style={cellStyle}>{row.d.toFixed(4)}</td>
               <td style={cellStyle}>{(row.alpha * DEG).toFixed(1)}</td>
               <td style={cellStyle}>{(row.theta * DEG).toFixed(1)}</td>
-              <td style={{ ...cellStyle, color: 'var(--text-dim)' }}>
+              <td style={{ ...cellStyle, color: 'var(--text-faint)' }}>
                 {(row.thetaMin * DEG).toFixed(1)}
               </td>
-              <td style={{ ...cellStyle, color: 'var(--text-dim)' }}>
+              <td style={{ ...cellStyle, color: 'var(--text-faint)' }}>
                 {(row.thetaMax * DEG).toFixed(1)}
               </td>
             </tr>
@@ -88,7 +88,7 @@ export function DHTable() {
                 ...cellStyle,
                 textAlign: 'center',
                 color: 'var(--text-faint)',
-                padding: '16px',
+                padding: 16,
               }}>
                 No joints in chain
               </td>
@@ -101,7 +101,7 @@ export function DHTable() {
 }
 
 const cellStyle: React.CSSProperties = {
-  padding: '5px 10px',
+  padding: '4px 8px',
   color: 'var(--text-primary)',
   borderBottom: '1px solid var(--border-subtle)',
   whiteSpace: 'nowrap',

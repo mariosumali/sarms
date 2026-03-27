@@ -4,6 +4,7 @@ import { FRIENDLY_NAMES, FRIENDLY_DESC, JOINT_COLORS } from '../lib/jointDefault
 import { JOINT_TYPE_ICONS, IconChevron } from './Icons';
 import type { Joint } from '../lib/kinematics';
 
+const DEG = 180 / Math.PI;
 const DRAGGABLE_TYPES: Joint['type'][] = ['revolute', 'prismatic', 'elbow', 'end-effector'];
 
 function Section({ title, badge, defaultOpen = true, children }: {
@@ -14,69 +15,69 @@ function Section({ title, badge, defaultOpen = true, children }: {
     <div className="panel-section">
       <div className="panel-section-header" onClick={() => setOpen(!open)}>
         <IconChevron
-          size={10}
+          size={9}
           color="var(--text-faint)"
           className={`panel-section-chevron ${open ? 'open' : ''}`}
         />
         {title}
-        {badge && (
-          <span className="panel-section-badge" style={{
-            background: 'var(--bg-raised)',
-            color: 'var(--text-muted)',
-          }}>{badge}</span>
-        )}
+        {badge && <span className="panel-section-badge">{badge}</span>}
       </div>
       {open && <div className="panel-section-body">{children}</div>}
     </div>
   );
 }
 
-function ArmChainPreview() {
-  const joints = useSandboxStore(s => s.joints);
+function getInlineValue(j: Joint): string {
+  if (j.type === 'revolute') return `${(j.theta * DEG).toFixed(1)}°`;
+  if (j.type === 'prismatic') return `${j.d.toFixed(3)}m`;
+  if (j.type === 'elbow') return `${(j.theta * DEG).toFixed(1)}°`;
+  return '';
+}
+
+function TreeItem({ joint, index }: { joint: Joint; index: number }) {
   const selectedId = useSandboxStore(s => s.selectedJointId);
   const selectJoint = useSandboxStore(s => s.selectJoint);
-
-  if (joints.length <= 1) return null;
+  const color = JOINT_COLORS[joint.type];
+  const Icon = JOINT_TYPE_ICONS[joint.type];
+  const isSelected = joint.id === selectedId;
+  const value = getInlineValue(joint);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', padding: '2px 0' }}>
-      {joints.map((j, i) => {
-        const color = JOINT_COLORS[j.type];
-        const isSelected = j.id === selectedId;
-        const Icon = JOINT_TYPE_ICONS[j.type];
-        return (
-          <div key={j.id} style={{ display: 'flex', alignItems: 'center' }}>
-            <button
-              onClick={() => selectJoint(j.id)}
-              title={j.name}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 'var(--radius-xs)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: isSelected ? '#fff' : color,
-                background: isSelected ? color : 'var(--bg-raised)',
-                border: `1px solid ${isSelected ? color : 'var(--border-default)'}`,
-                cursor: 'pointer',
-                padding: 0,
-                transition: 'all 100ms ease',
-              }}
-            >
-              {Icon ? <Icon size={13} color={isSelected ? '#fff' : color} /> : null}
-            </button>
-            {i < joints.length - 1 && (
-              <div style={{
-                width: 8,
-                height: 1,
-                background: 'var(--border-strong)',
-                borderRadius: 1,
-              }} />
-            )}
-          </div>
-        );
-      })}
+    <div
+      className={`tree-item ${isSelected ? 'selected' : ''}`}
+      style={{ paddingLeft: `${6 + Math.min(index, 4) * 8}px` }}
+      onClick={() => selectJoint(joint.id)}
+    >
+      <div className="tree-item-icon">
+        {Icon && <Icon size={11} color={isSelected ? 'var(--accent-text)' : color} />}
+      </div>
+      <span className="tree-item-name">{joint.name}</span>
+      {value && <span className="tree-item-value">{value}</span>}
+    </div>
+  );
+}
+
+function ChainHierarchy() {
+  const joints = useSandboxStore(s => s.joints);
+
+  if (joints.length <= 1) {
+    return (
+      <div style={{
+        fontSize: 11,
+        color: 'var(--text-faint)',
+        textAlign: 'center',
+        padding: '8px 0',
+      }}>
+        Load a preset or add parts below
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {joints.map((j, i) => (
+        <TreeItem key={j.id} joint={j} index={i} />
+      ))}
     </div>
   );
 }
@@ -88,22 +89,11 @@ export function LeftPanel() {
   return (
     <div className="panel panel-left">
       <Section title="Chain" badge={`${joints.length}`}>
-        <ArmChainPreview />
-        {joints.length <= 1 && (
-          <div style={{
-            fontSize: 11,
-            color: 'var(--text-faint)',
-            textAlign: 'center',
-            padding: '6px 0',
-            lineHeight: 1.5,
-          }}>
-            Load a preset or add parts below
-          </div>
-        )}
+        <ChainHierarchy />
       </Section>
 
       <Section title="Add Part">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {DRAGGABLE_TYPES.map(type => {
             const color = JOINT_COLORS[type];
             const Icon = JOINT_TYPE_ICONS[type];
@@ -118,11 +108,8 @@ export function LeftPanel() {
                 }}
                 onClick={() => addJoint(type)}
               >
-                <div className="joint-card-icon" style={{
-                  background: 'var(--bg-raised)',
-                  border: '1px solid var(--border-default)',
-                }}>
-                  {Icon && <Icon size={15} color={color} />}
+                <div className="joint-card-icon">
+                  {Icon && <Icon size={12} color={color} />}
                 </div>
                 <div className="joint-card-info">
                   <div className="joint-card-name">{FRIENDLY_NAMES[type]}</div>
@@ -134,29 +121,47 @@ export function LeftPanel() {
         </div>
       </Section>
 
-      <div style={{ marginTop: 'auto', padding: '8px 12px', borderTop: '1px solid var(--border-subtle)' }}>
-        <div style={{ fontSize: 10, color: 'var(--text-faint)', lineHeight: 1.7, letterSpacing: 0 }}>
-          <div style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 3 }}>Shortcuts</div>
-          <div><kbd style={kbdStyle}>Del</kbd> Remove selected</div>
-          <div><kbd style={kbdStyle}>⌘Z</kbd> Undo</div>
-          <div><kbd style={kbdStyle}>Shift+click</kbd> Add waypoint</div>
+      <div style={{
+        marginTop: 'auto',
+        padding: '6px 8px',
+        borderTop: '1px solid var(--border-subtle)',
+      }}>
+        <div style={{ fontSize: 10, color: 'var(--text-faint)', lineHeight: 1.6 }}>
+          <div style={{
+            color: 'var(--text-muted)',
+            fontWeight: 500,
+            fontSize: 10,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            marginBottom: 2,
+          }}>
+            Shortcuts
+          </div>
+          <div><Kbd>Del</Kbd> Remove selected</div>
+          <div><Kbd>⌘Z</Kbd> Undo</div>
+          <div><Kbd>Shift+click</Kbd> Add waypoint</div>
         </div>
       </div>
     </div>
   );
 }
 
-const kbdStyle: React.CSSProperties = {
-  display: 'inline-block',
-  fontFamily: 'var(--font-mono)',
-  fontSize: 8.5,
-  fontWeight: 500,
-  background: 'var(--bg-raised)',
-  border: '1px solid var(--border-default)',
-  borderRadius: 3,
-  padding: '0px 4px',
-  marginRight: 4,
-  lineHeight: '16px',
-  verticalAlign: 'middle',
-  color: 'var(--text-muted)',
-};
+function Kbd({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd style={{
+      display: 'inline-block',
+      fontFamily: 'var(--font-mono)',
+      fontSize: 9,
+      background: 'var(--bg-raised)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 2,
+      padding: '0 3px',
+      marginRight: 3,
+      lineHeight: '14px',
+      verticalAlign: 'middle',
+      color: 'var(--text-muted)',
+    }}>
+      {children}
+    </kbd>
+  );
+}

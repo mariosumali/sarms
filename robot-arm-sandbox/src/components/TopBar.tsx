@@ -3,29 +3,6 @@ import { exportDHJSON, exportURDFStub, downloadFile } from '../lib/exporters';
 import { useState, useRef, useEffect } from 'react';
 import { LogoMark, IconSidebar, IconInspector, IconTimeline, IconExport } from './Icons';
 
-function PanelToggle({ icon, label, active, onClick }: {
-  icon: React.ReactNode; label: string; active: boolean; onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={`${active ? 'Hide' : 'Show'} ${label}`}
-      style={{
-        color: active ? 'var(--text-secondary)' : 'var(--text-faint)',
-        background: active ? 'var(--bg-raised)' : 'transparent',
-        border: `1px solid ${active ? 'var(--border-default)' : 'transparent'}`,
-        padding: '3px 8px',
-        fontSize: 10.5,
-        fontWeight: 500,
-        gap: 4,
-      }}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
 function PresetDropdown() {
   const loadPreset = useSandboxStore(s => s.loadPreset);
   const [open, setOpen] = useState(false);
@@ -45,10 +22,8 @@ function PresetDropdown() {
       <button
         onClick={() => setOpen(!open)}
         style={{
-          background: open ? 'var(--bg-elevated)' : 'var(--bg-raised)',
-          borderColor: open ? 'var(--border-strong)' : 'var(--border-default)',
-          fontSize: 11,
-          padding: '3px 10px',
+          background: open ? 'var(--bg-raised)' : undefined,
+          borderColor: open ? 'var(--border-strong)' : undefined,
         }}
       >
         Presets
@@ -59,16 +34,14 @@ function PresetDropdown() {
       {open && (
         <div style={{
           position: 'absolute',
-          top: 'calc(100% + 4px)',
+          top: 'calc(100% + 2px)',
           left: 0,
-          background: 'var(--bg-elevated)',
+          background: 'var(--bg-raised)',
           border: '1px solid var(--border-strong)',
           borderRadius: 'var(--radius-md)',
-          boxShadow: 'var(--shadow-lg)',
           zIndex: 50,
-          minWidth: 170,
-          padding: 3,
-          animation: 'fade-slide-in 0.1s ease-out',
+          minWidth: 150,
+          padding: 2,
         }}>
           {PRESET_NAMES.map(name => (
             <button
@@ -78,13 +51,13 @@ function PresetDropdown() {
                 display: 'flex',
                 width: '100%',
                 textAlign: 'left',
-                padding: '5px 9px',
-                fontSize: 11.5,
+                padding: '4px 8px',
+                fontSize: 11,
                 background: 'transparent',
                 border: 'none',
-                borderRadius: 'var(--radius-xs)',
+                borderRadius: 'var(--radius-sm)',
                 color: 'var(--text-secondary)',
-                fontWeight: 450,
+                height: 'auto',
               }}
             >
               {name}
@@ -96,8 +69,12 @@ function PresetDropdown() {
   );
 }
 
+const MODES = ['build', 'animate', 'analyze'] as const;
+
 export function TopBar() {
   const joints = useSandboxStore(s => s.joints);
+  const mode = useSandboxStore(s => s.mode);
+  const setMode = useSandboxStore(s => s.setMode);
   const leftOpen = useSandboxStore(s => s.leftPanelOpen);
   const rightOpen = useSandboxStore(s => s.rightPanelOpen);
   const bottomOpen = useSandboxStore(s => s.bottomPanelOpen);
@@ -117,43 +94,72 @@ export function TopBar() {
 
   return (
     <div className="topbar">
-      <div className="topbar-logo">
-        <LogoMark size={24} />
-        <div>
-          <div className="topbar-logo-text">Robot Arm Sandbox</div>
-          <div className="topbar-logo-subtitle">DH Parameter Editor</div>
-        </div>
+      <div className="topbar-title">
+        <LogoMark size={16} />
+        Robot Arm Sandbox
       </div>
 
-      <PresetDropdown />
+      <div className="mode-tabs">
+        {MODES.map(m => (
+          <button
+            key={m}
+            className={`mode-tab ${mode === m ? 'active' : ''}`}
+            onClick={() => setMode(m)}
+          >
+            {m.charAt(0).toUpperCase() + m.slice(1)}
+          </button>
+        ))}
+      </div>
 
       <div className="topbar-divider" />
 
-      <span className="mono" style={{
-        fontSize: 10,
-        fontWeight: 500,
-        color: 'var(--text-faint)',
-      }}>
-        {jointCount} parts &middot; {dofCount} DOF
+      <PresetDropdown />
+
+      <span className="topbar-meta">
+        {jointCount}J &middot; {dofCount}DOF
       </span>
 
       <div className="topbar-spacer" />
 
       <div className="topbar-group">
-        <PanelToggle icon={<IconSidebar size={12} />} label="Parts" active={leftOpen} onClick={toggleLeft} />
-        <PanelToggle icon={<IconInspector size={12} />} label="Inspector" active={rightOpen} onClick={toggleRight} />
-        <PanelToggle icon={<IconTimeline size={12} />} label="Timeline" active={bottomOpen} onClick={toggleBottom} />
+        <button
+          className={leftOpen ? 'btn-sm' : 'btn-sm btn-ghost'}
+          onClick={toggleLeft}
+          title="Toggle Parts panel"
+          style={{ gap: 3 }}
+        >
+          <IconSidebar size={11} />
+          Parts
+        </button>
+        <button
+          className={rightOpen ? 'btn-sm' : 'btn-sm btn-ghost'}
+          onClick={toggleRight}
+          title="Toggle Inspector panel"
+          style={{ gap: 3 }}
+        >
+          <IconInspector size={11} />
+          Inspector
+        </button>
+        <button
+          className={bottomOpen ? 'btn-sm' : 'btn-sm btn-ghost'}
+          onClick={toggleBottom}
+          title="Toggle Timeline panel"
+          style={{ gap: 3 }}
+        >
+          <IconTimeline size={11} />
+          Timeline
+        </button>
       </div>
 
       <div className="topbar-divider" />
 
       <div className="topbar-group">
-        <button onClick={handleExportDH} className="btn-ghost" style={{ fontSize: 10.5, padding: '3px 8px' }}>
-          <IconExport size={11} />
+        <button onClick={handleExportDH} className="btn-ghost btn-sm" style={{ gap: 3 }}>
+          <IconExport size={10} />
           JSON
         </button>
-        <button onClick={handleExportURDF} className="btn-ghost" style={{ fontSize: 10.5, padding: '3px 8px' }}>
-          <IconExport size={11} />
+        <button onClick={handleExportURDF} className="btn-ghost btn-sm" style={{ gap: 3 }}>
+          <IconExport size={10} />
           URDF
         </button>
       </div>

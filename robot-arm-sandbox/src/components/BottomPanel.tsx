@@ -43,43 +43,45 @@ export function BottomPanel() {
     <div className="panel-bottom">
       <div style={{
         display: 'flex', alignItems: 'center',
-        padding: '6px 12px', gap: 8, flexWrap: 'wrap',
+        padding: '4px 8px', gap: 6, flexWrap: 'wrap',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--text-faint)' }}>
-            {jointCount} parts &middot; {dofCount} DOF
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)' }}>
+            {jointCount}J · {dofCount}DOF
           </span>
 
           {animState === 'playing' && (
-            <span className="stat-badge stat-badge--accent" style={{ fontSize: 9 }}>
+            <span className="stat-badge stat-badge--accent">
               IK {Math.round(animProgress * 100)}%
             </span>
           )}
 
           {pathAnimState !== 'idle' && waypoints.length > 0 && (
-            <span className="stat-badge stat-badge--amber" style={{ fontSize: 9 }}>
+            <span className="stat-badge stat-badge--amber">
               Path {pathAnimProgress.toFixed(1)}/{pathSegCount}
-              {currentWpIdx >= 0 && ` \u2192 WP${currentWpIdx + 1}`}
+              {currentWpIdx >= 0 && ` → WP${currentWpIdx + 1}`}
             </span>
           )}
 
           {eeTrace.length > 0 && (
-            <span className="mono" style={{ fontSize: 9, color: 'var(--text-faint)' }}>
-              Trail: {eeTrace.length} pts
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)' }}>
+              Trail: {eeTrace.length}pts
             </span>
           )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 500, color: 'var(--text-muted)',
+            textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0,
+          }}>
             Timeline
           </span>
 
           <button
             onClick={() => (simulationState === 'playing' ? pauseTimelinePlayback() : startTimelinePlayback())}
             disabled={!canPlayTimeline}
-            className={`btn-sm ${canPlayTimeline && simulationState !== 'playing' ? 'btn-accent' : ''}`}
-            title={canPlayTimeline ? 'Play or pause keyframe playback' : 'Need at least 2 keyframes'}
+            className={`btn-sm ${canPlayTimeline && simulationState !== 'playing' ? 'btn-primary' : ''}`}
           >
             {simulationState === 'playing' ? 'Pause' : 'Play'}
           </button>
@@ -90,18 +92,17 @@ export function BottomPanel() {
             onClick={recordKeyframe}
             disabled={simulationState === 'playing'}
             className="btn-sm btn-danger"
-            title="Save current pose at the scrub time"
           >
             Record
           </button>
 
           {keyframes.length > 0 && (
             <button onClick={clearKeyframes} className="btn-ghost btn-xs" style={{ color: 'var(--text-faint)' }}>
-              Clear KF
+              Clear
             </button>
           )}
 
-          <span className="mono" style={{ fontSize: 10, color: 'var(--text-faint)', minWidth: '4em', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', minWidth: '3em', flexShrink: 0 }}>
             {keyframes.length} kf
           </span>
 
@@ -114,25 +115,24 @@ export function BottomPanel() {
             disabled={simulationState === 'playing'}
             onChange={e => setPlaybackTime(Number(e.target.value))}
             style={{ width: 140, flexShrink: 1, minWidth: 80 }}
-            title="Scrub timeline"
           />
 
-          <span className="mono" style={{ fontSize: 10, color: 'var(--text-faint)', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', flexShrink: 0 }}>
             t={playbackTime.toFixed(2)}s
           </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
           {waypoints.length > 0 && (
-            <span className="mono" style={{ fontSize: 9, color: 'var(--text-faint)' }}>
-              {waypoints.length} waypoints
+            <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)' }}>
+              {waypoints.length} wp
             </span>
           )}
           <button
             onClick={() => setShowDH(!showDH)}
-            className={showDH ? 'btn-sm btn-accent' : 'btn-sm'}
+            className={showDH ? 'btn-sm btn-primary' : 'btn-sm'}
           >
-            {showDH ? 'Hide' : 'Show'} DH Table
+            {showDH ? 'Hide' : 'Show'} DH
           </button>
         </div>
       </div>

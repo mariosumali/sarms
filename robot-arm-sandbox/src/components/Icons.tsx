@@ -131,7 +131,7 @@ export function LogoMark({ size = 24 }: { size?: number }) {
   );
 }
 
-export const JOINT_TYPE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
+export const JOINT_TYPE_ICONS: Record<string, (props: IconProps) => React.ReactNode> = {
   base: IconBase,
   revolute: IconRevolute,
   prismatic: IconPrismatic,
